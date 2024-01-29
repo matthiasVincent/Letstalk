@@ -1,0 +1,12 @@
+<div class="comment-post fixed-bottom bg-light">
+    <form action="/replies/{{comment.comment_id}}/" method="post" id="comment">
+        <div class="in-wrap w-100 px-2">
+         {% csrf_token %}
+            <textarea name="reply"  rows="1" class="w-100 mr-2 p-2" placeholder="Write a comment" 
+            style="resize: none; overflow: hidden;" id="msg"></textarea>
+            <input type="hidden" name="comment_id" value="{{comment.comment_id}}">
+            <input type="hidden", name="profile", value="{{request.user.username}}">
+            <button type="submit" class="p-2"><i class="fa fa-paper-plane text-primary" style="font-size: 25px;"></i></button>
+        </div>
+    </form>
+</div>

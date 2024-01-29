@@ -1,0 +1,134 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body{
+    height:100vh;
+}
+
+
+.search-cont{
+    width: 50%;
+}
+
+.pic-cont{
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-image: radial-gradient(black,cyan,violet, purple);
+}
+
+
+/* Style for Inbox */
+.msg-cont{
+    margin: 5px auto;
+    /* padding: 5px; */
+    background-color: azure;
+    width: 40%;
+    height: 100vh;
+    position: relative;
+}
+.send-cont{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 40%;
+    position: fixed;
+    bottom:0;
+    padding: 7px 5px;
+    background-color:beige;
+    margin: 0 auto;
+}
+input, button, label{
+    border: none;
+    padding: 2px;
+}
+.lb{
+    width: 60px;
+    height: 60px;
+}
+
+#msg_div{
+    overflow-y: auto;
+    /* background-color: beige; */
+    height: 100%;
+    margin-bottom: 40px;
+    padding-bottom: 70px;
+}
+
+
+#msg{
+    width: 70%;
+    border: 1px solid blue;
+    border-radius: 6px;
+    outline-style: none;
+    margin-left: 8px;
+}
+#sub{
+    background-color: whitesmoke;
+    width: 60px;
+    height: 60px;
+    color:white;
+    border-radius: 6px;
+    margin-left: 8px;
+}
+ .inbox{
+    height: 100%;
+    position: relative;
+    overflow-y: auto;
+ }
+ .btn-cont{
+    background-color: antiquewhite;
+    position: absolute;
+    bottom: 0;
+    left:0;
+    width: 100%;
+ }
+ .btn-cont .msg{
+    width:70%;
+    border-radius: 20px;
+    outline-style: none;
+    border: none;
+}
+
+  .chat-cont{
+    overflow-y: auto;
+    height: 90%;
+ }
+
+.buddy-msg{
+    border-radius: 15px;
+    word-wrap: break-word;
+}
+
+.login-cont{
+    border-radius: 15px;
+    word-wrap: break-word;
+    max-width: 60%;
+}
+@media only screen and (max-width:600px) {
+    .search-cont{
+        width: 100%;
+    }
+    /* Style for Inbox */
+    .btn-cont .msg{
+        width:50%;
+    }
+    .msg-cont{
+        width: 100%;
+    }
+    .send-cont{
+        width: 100%;
+    }
+}
+
+@media only  screen and (min-width:501px)  and (max-width:800px){
+    .msg-cont{
+        width: 60%;
+    }
+    .send-cont{
+        width: 60%;
+    }
+}

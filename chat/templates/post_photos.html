@@ -1,0 +1,53 @@
+{% if post.photos and post.photos|length == 2 %}
+       <div class="row">
+            {% for pic in post.photos %}
+            <div class="col">
+                <div class="pic">
+                    <img src="{{pic.image.url}}" alt="Picture here" style="width: 100%; height: 100%;">
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% elif post.photos and post.photos|length == 1 %}
+        <div class="col">
+            <div class="pic">
+                <img src="{{post.photos.last.image.url}}" alt="Picture here" style="width: 100%; height: 100%;">
+            </div>
+        </div>
+
+        {% elif post.photos and post.photos|length == 3 %}
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr);">
+            <div class="f bg-info mr-2">
+                {% for pic in post.photos|slice:":1" %}
+                <div class="pic h-100">
+                    <img src="{{pic.image.url}}" alt="Picture here" style="width: 100%; height: 100%">
+                </div>
+                {% endfor %}
+            </div>
+            <div class="s bg-warning" style="display: grid; grid-template-rows: repeat(2, 1fr);">
+                {% for pic in post.photos|slice:"1:" %}
+                    <div class="pic">
+                        <img src="{{pic.image.url}}" alt="Picture here" style="width: 100%;">
+                    </div>
+                {% endfor %}
+            </div>
+        </div> 
+
+        {% elif post.photos and post.photos|length == 4 %}
+        <div class="row-cont">
+            <div class="row1" style="display: grid; grid-template-columns: repeat(2, 1fr);">
+                {% for pic in post.photos|slice:":2" %}
+                <div class="pic">
+                    <img src="{{pic.image.url}}" alt="Picture here" style="width: 100%; height: 40vh;">
+                </div>
+                {% endfor %}
+            </div>
+            <div class="row2" style="display: grid; grid-template-columns: repeat(2, 1fr);">
+                {% for pic in post.photos|slice:"2:" %}
+                <div class="pic">
+                    <img src="{{pic.image.url}}" alt="Picture here" style="width: 100%; height: 40vh;">
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}

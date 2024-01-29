@@ -1,0 +1,12 @@
+<div class="p-3 text-justify">
+    <p class="post-words">
+        {% if post.words|length > 40 %}
+            {{post.words|truncatechars:40}}
+            <span class="text-dark showfull" 
+            onclick="document.querySelector('.post-words').innerHTML=`{{post.words}}`" style="cursor: pointer;">
+            See more</span>
+        {% else %}
+            {{post.words|truncatechars:40}}
+        {% endif %}
+    </p>
+</div>

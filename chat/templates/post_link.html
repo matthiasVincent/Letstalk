@@ -1,0 +1,19 @@
+{% load static %}
+{% if user == logged_in %}
+<a href="/post/" class="post-page d-flex align-items-center p-2 text-decoration-none" 
+    style="border: solid 1.5px darkblue; border-radius: 30px; margin: 0 auto;">
+    <div class="lf">
+        <div style="width: 30px; height: 30px; border-radius: 50%;">
+            <img src="{{user.profile_image.url}}" alt="hi" style="width: 100%; height: 100%; border-radius: 50%;">
+        </div>
+    </div>
+    {% block input %}
+    <div class="post-link mx-2 p-2 w-100" style="border-radius: 20px; background-color: whitesmoke">
+        <p class="m-0 p-0">What is on your mind</p>
+    </div>
+    {% endblock %}
+        <div class="some">
+            <i class="fa fa-file-image text-dark" aria-hidden="true" style="font-size: 25px;"></i>
+        </div>
+</a>
+{% endif %} 

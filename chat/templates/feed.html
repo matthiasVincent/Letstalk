@@ -1,0 +1,282 @@
+{% extends './base.html' %}
+{% load static %}
+{% block link %}
+ {{block.super}}
+ <link rel="stylesheet" href="{% static '/style.css' %}"> 
+ {% endblock %}
+{% block title %}<title>{{user.fullname}}</title> {% endblock %}
+
+{% block collapse %}
+<nav>
+    <div class="up-wrapper p-2">
+        <div class="app-name">
+            <h5 class="text-white">Letstalk</h5>
+        </div>
+        <a href="#" class="search">
+            <i class="fa fa-search text-light" style="font-size: 20px;"></i>
+        </a>
+        <!-- <div class="form-container">
+            <form action="#">
+                <input type="text" class="form-control sr" placeholder="Type to search" name="search">
+                <button type="submit" class="btn btn-success ml-3"><i class="fa fa-search"></i></button>
+                <input type="submit" class="btn btn-success  p-2 text-white m-sm-2 sr" value="Search">
+            </form>
+        </div> -->
+    </div>
+
+    <div class="down-wrapper p-2">
+        <ul class="nav-icons m-0 p-0">
+            <li class="ref">
+                <a href="#home" class="icons active" role="button">
+                    <i class="fa fa-home" style="font-size: 20px;"></i>
+                </a>
+            </li>
+            <li class="friend-request">
+                <a href="#friend-request" class="icons" role="button">
+                    <i class="fa fa-user-friends" style="font-size: 20px;"></i>
+                </a>
+            </li>
+            <li class="chat-message">
+                <a href="#messages"  class="icons" role="button">
+                    <i class="fa-brands fa-facebook-messenger" style="font-size: 20px;"></i>
+                </a>
+            </li>
+            <li class="drop-profile" style="position: relative;">
+                <a href="#" role="button" class="drop">
+                    <div class="img-cont" style="width: 30px; height: 30px; border-radius: 50%;">
+                        <img src="{{user.profile_image.url}}" alt="hi" style="width: 100%; height: 100%; border-radius: 50%;"/>
+                    </div>
+                </a>
+                <ul class="drop-items hide mt-3 p-3">
+                    <li>
+                        <a href="{% url 'setting' %}" class="text-decoration-none text-dark"><i class="fa fa-wrench"></i>&nbsp; Account Settings</a>
+                    </li>
+                    <li>
+                        <a href="{% url 'dologout' %}" class="text-decoration-none text-dark"><i class="fa fa-power-off"></i>&nbsp; Logout</a>
+                    </li>
+                    <li>
+                        <a href="/profile/{{user.username}}/" class="text-decoration-none text-dark"><i class="fa fa-user"></i>&nbsp; Profile Page</a>
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</nav>
+{% endblock %}
+
+{% block main %}
+<!-- Home Section -->
+<section class="home active" id="home">
+    {% include 'section_home.html' %}
+</section>
+
+<!-- Friend Request section -->
+<section class="friend-request" id="friend-request">
+    {% include 'section_friend_request.html' %}
+</section>
+<!-- Messages Section -->
+<section class="messages" id="messages">
+        {% include 'messages.html' %}
+</section>
+
+{% endblock %}
+
+{% block footer %} {% endblock %}
+
+{% block script %} 
+{{block.super}}
+<script src="{% static '/feed.js' %}" type="text/javascript"></script>
+<script>
+    console.log($('.drop'))
+    $('.drop').click(
+        function(){
+            $('.drop-items').toggleClass("show", "hide")
+        }
+    )
+var f = new FormData()
+f.append("name", "value")
+console.log(f)
+console.log(window.location.host)
+    $(document).ready(
+        function(){
+            // $.get("http://localhost:8000/api/v1/user_posts/", function(data){
+            //     console.log(data)
+                // $('.api-cont').append(data[0].post_pictures.map(
+                //     pic =>  `<img src="http://localhost:8001/${pic.image}" width="150px" height="150px">`
+                // )
+                //     // `<img src="http://localhost:8001/${data[0].post_pictures[3].image}" width="150px" height="150px">`
+                // )
+                                //})
+                $.get("http://" + window.location.host + "/api/v1/user/friend_request/", function(data){
+                console.log(data)
+                $('#follower-request').append(data.map(user => `
+                            <div class="user">
+                                <div class="lf">
+                                    <div class="img-cont">
+                                        <img src="${user.profile_image}" alt="hi" style="width: 100%; height: 100%; border-radius: 50%;">
+                                    </div>
+                                    <div class="some-text">
+                                        <span>${user.fullname.length > 12 ? `${user.fullname.slice(0, 12) + "..."}` : `${user.fullname}`}</span>
+                                        ${user.favorite_quote? `
+                                        <span>${(user.favorite_quote).slice(0, 12) + "..."}</span>`: ""}
+                                </div>
+                            </div>
+                            <div class="bt-cont">
+                                <form action="{% url 'editprofile' %}" method="post" id="follow_form">
+                                    {% csrf_token %}
+                                    <input type="hidden" class="form-control" value="{{logged_in.username}}" name="follower">
+                                    <input type="hidden" class="form-control" value="{{user.username}}" name="following">
+                                    <input type="hidden" name="follow">
+                                    <button class="btn btn-success p-2">Confirm</button>
+                                </form>
+                            </div>
+                        </div>
+                        <hr>
+                `))
+                                })
+                $.get("http://" + window.location.host + "/api/v1/user/friend_suggestion/", function(data){
+                console.log(data)
+                $('#user_suggestion').append(data.map(user => `
+                            <div class="user">
+                                <div class="lf">
+                                    <div class="img-cont">
+                                        <img src="${user.profile_image}" alt="hi" style="width: 100%; height: 100%; border-radius: 50%;">
+                                    </div>
+                                    <div class="some-text">
+                                        <span>${user.fullname.length > 12 ? `${user.fullname.slice(0, 12) + "..."}` : `${user.fullname}`}</span>
+                                        ${user.favorite_quote? `
+                                        <span>${(user.favorite_quote).slice(0, 12) + "..."}</span>`: ""}
+                                    </div>
+                                </div>
+                                <div class="bt-cont">
+                                    <a href="/profile/${user.username}/" class="text-white text-decoration-none btn btn-success p-2">View Profile</a>
+                                </div>
+                            </div>
+                            <hr>
+                `))
+
+                $('#request_suggestion').append(data.map(user => `
+                            <div class="user">
+                                <div class="lf">
+                                    <div class="img-cont">
+                                        <img src="${user.profile_image}" alt="hi" style="width: 100%; height: 100%; border-radius: 50%;">
+                                    </div>
+                                    <div class="some-text">
+                                        <span>${user.fullname.length > 12 ? `${user.fullname.slice(0, 12) + "..."}` : `${user.fullname}`}</span>
+                                        ${user.favorite_quote? `
+                                        <span>${(user.favorite_quote).slice(0, 12) + "..."}</span>`: ""}
+                                    </div>
+                                </div>
+                                <div class="bt-cont">
+                                    <a href="/profile/${user.username}/" class="text-white text-decoration-none btn btn-success p-2">View Profile</a>
+                                </div>
+                            </div>
+                            <hr>
+                `))
+
+                })
+
+                $.get("http://" + window.location.host + "/api/v1/user/buddy_list/", function(data){
+                console.log(data)
+                $('#buddy-list').append(
+                    data.map(user => `
+                    <a href="/inbox/${user.username}/" class="text-decoration-none">
+                        <div class="single-friend p-3 d-flex" style="width: 80%;">
+                            <div class="picture-cont">
+                                <img src="${user.profile_image}" alt="" id="pb">
+                            </div>
+                            <div class="friend-det" style="margin-left: 10%;">
+                                <p class="h5 text-dark">${user.fullname.length > 12 ? `${user.fullname.slice(0, 12) + "..."}` : `${user.fullname}`}</p>
+                                <p class="last-msg h6 text-dark">Hello world</p>
+                            </div>
+                        </div>
+                    </a>
+                    <hr/>
+                    `)
+                )
+                })
+
+
+            $('.likebutton').click(
+                    function(ev)
+                        {
+                            ev.preventDefault();
+                            const n = $(this);
+                            console.log(n)
+                            const data_id = $(this).attr("id")
+                            console.log(data_id)
+                            $.ajax(
+                        {
+                            type: "GET",
+                            url: "/likepost/",
+                            data: {post: data_id},
+                            success: function(data) 
+                                {
+                                                
+                                 const user_in = data.I_liked
+                                 const likes = data.count
+                                 if (user_in === true && likes > 2) 
+                                 {
+                                    $(`.like_count${data_id}`).html(`You, and ${likes - 1} others`)
+                                    $(`.i-like${data_id}`).children('i').removeClass('text-dark')
+                                    $(`.i-like${data_id}`).children('i').addClass('text-primary')
+                                    $(`.i-like${data_id}`).children('span').html(`${likes}`)
+                                    // $(`.i-like${data_id}`).css("color", "blue")
+                                 }
+                                 else if (user_in == false && likes == 1)
+                                 {
+                                    $(`.like_count${data_id}`).html(`${likes} like`)
+                                    $(`.i-like${data_id}`).children('i').removeClass('text-primary')
+                                    $(`.i-like${data_id}`).children('i').addClass('text-dark')
+                                    $(`.i-like${data_id}`).children('span').html(`${likes}`)
+                                    //$(`.i-like${data_id}`).css("color", "black")
+                                }
+                                 else if (user_in == false && likes >= 2)
+                                 {
+                                    $(`.like_count${data_id}`).html(`${likes} likes`)
+                                    $(`.i-like${data_id}`).children('i').removeClass('text-primary')
+                                    $(`.i-like${data_id}`).children('i').addClass('text-dark')
+                                    $(`.i-like${data_id}`).children('span').html(`${likes}`)
+                                    //$(`.i-like${data_id}`).css("color", "black")
+                                 }
+                                 else if (user_in == false && likes < 1)
+                                 {
+                                    $(`.like_count${data_id}`).html(``)
+                                    $(`.i-like${data_id}`).children('i').removeClass('text-primary')
+                                    $(`.i-like${data_id}`).children('i').addClass('text-dark')
+                                    $(`.i-like${data_id}`).children('span').html(`${likes}`)
+                                    //$(`.i-like${data_id}`).css("color", "black")
+                                }
+                                 else if (user_in == true && likes == 1)
+                                 {
+                                    $(`.like_count${data_id}`).html(`You Liked this`)
+                                    $(`.i-like${data_id}`).children('i').removeClass('text-dark')
+                                    $(`.i-like${data_id}`).children('i').addClass('text-primary')
+                                    $(`.i-like${data_id}`).children('span').html(`${likes}`)
+                                    //$(`.i-like${data_id}`).css("color", "blue")
+                                }
+                                 else if (user_in == true && likes == 2)
+                                 {
+                                    $(`.like_count${data_id}`).html(`You, and ${likes - 1} other`)
+                                    $(`.i-like${data_id}`).children('i').removeClass('text-dark')
+                                    $(`.i-like${data_id}`).children('i').addClass('text-primary')
+                                    
+                                    $(`.i-like${data_id}`).children('span').html(`${likes}`)
+                                    //$(`.i-like${data_id}`).css("color", "blue")
+                                    }
+                                    console.log(data)
+                                },
+                            error: function(data) 
+                                {
+                                 console.log("something went wrong")
+                                }
+                        
+                        }
+                                );
+
+        }
+    )
+        }
+    )
+</script>
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends './base.html' %}
+{% load static %}
+{% block link %}
+ {{block.super}}
+ <link rel="stylesheet" href="{% static '/post_detail.css' %}"> 
+ {% endblock %}
+{% block title %} <title>inbox-{{userprofile.fullname}}</title> {% endblock %}
+
+{% block collapse %}
+<nav class="hdr">
+    <ul>
+        <li>
+            <a href="/post_comment/{{comment.post.post_id}}/"  class="h6 text-dark"><i class="fa fa-arrow-left"></i></a>
+        </li>
+        <li>
+            <a href="{% url 'home' %}">replies</a>
+        </li>
+        <li>
+            <a href="{% url 'home' %}"  class="h6 text-dark"><i class="fa fa-search"></i></a>
+        </li>
+    </ul>
+</nav>
+{% endblock %}
+
+{% block main %}
+<div class="wrapper cmt-cont" style="padding-bottom: 80px;" id="comment-box">
+    {% if has_reply %}
+    <div class="wrap-reply mt-2" style="border-bottom: 1px solid black;">
+        <div class="img-cont-reply">
+            <img src="{{comment.user.profile_image.url}}" alt="" class="image">
+        </div>
+        <div class="txt-wrap-reply" style="background-color: rgba(245, 245, 220, .5); border-radius: 10px;">
+            <div class="name-cont-reply">
+                <b><p>{{comment.user.fullname}}</p></b>
+                <p>{{comment.comments}}</p>
+            </div>
+            <div class="some-reply">
+                <span>13 mins</span>
+                <a href="#">like</a>
+                <a href="/replies/{{comment.comment_id}}/">reply</a>
+            </div>
+        </div> 
+    </div>
+        
+    <div class="short-wrapper pt-3 " id="reply-cont">
+        {% for rep in comment.replies %}
+            <div class="short ml-3">
+                <div class="img-reply" style="width:40px; height: 40px; border-radius: 50%;">
+                    <img src="{{rep.user.profile_image.url}}" alt="" class="image" style="width: 100%; height: 100%; border-radius: 50%;">
+                </div>
+                <div class="comment-reply p-3 mb-2 ml-3" style="border-radius: 15px; background-color: aliceblue;">
+                    <b><p>{{rep.user.fullname}}</p></b>
+                    <p>{{rep.comments}}</p>
+                <div class="some-reply p-0 pb-3" style="margin-top: 5px">
+                    <span>13 mins</span>
+                    <a href="#">like</a>
+                    <a href="">reply</a>
+                </div>
+                </div>
+            </div>
+            {% endfor %}
+    </div>
+
+   {% else %}
+    <div class="only-comment mt-2 d-flex pl-3">
+        <div class="img-comment" style="width: 60px; height: 60px; border-radius: 50%;">
+            <img src="{{comment.user.profile_image.url}}" alt="" style="width: 100%; height: 100%; border-radius: 50%;">
+        </div>
+        <div class="cmt-details ml-3 p-3" style="width: 70%; border-radius: 15px; background-color: aliceblue;">
+            <div class="cmt-name">
+                <b><p>{{comment.user.fullname}}</p></b>
+                <p>{{comment.comments}}</p>
+            </div>
+            <div class="some">
+                <span>13 mins</span>
+                <a href="#">like</a>
+                <a href="">reply</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    <!-- </div> -->
+    {% include 'comment_form_rep.html' %}
+   </div>
+{% endblock %}
+
+{% block footer %}
+
+{% endblock %}
+
+{% block script %}
+{{block.super}}
+<script src="{% static '/comment_rep_form.js' %}" type="text/javascript"></script>
+<script>
+    $(document).ready(
+        function(){
+            console.log("Loaded")
+            bd = $("body")
+            rep_cont = $('.wrapper')
+            console.log(rep_cont.prop("scrollHeight"))
+            window.scrollTo(0, bd.prop("scrollHeight"))
+            rep_cont.scrollTop(rep_cont.prop("scrollHeight"))
+        }
+    )
+</script>
+{% endblock %}
