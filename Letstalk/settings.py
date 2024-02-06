@@ -32,7 +32,6 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
-    'daphne',
     'channels',
     'rest_framework',
     'django.contrib.admin',
@@ -72,7 +71,7 @@ TEMPLATES = [
     },
 ]
 
-# WSGI_APPLICATION = 'Letstalk.wsgi.application'
+WSGI_APPLICATION = 'Letstalk.wsgi.application'
 ASGI_APPLICATION = 'Letstalk.asgi.application'
 
 
@@ -82,11 +81,13 @@ ASGI_APPLICATION = 'Letstalk.asgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'letstalk_2',
+        'NAME': 'letstalk',
         'USER': 'letstalk',
         'PORT': 3306,
         'HOST': 'localhost',
         'PASSWORD': 'Letstalk@28908',
+        'OPTIONS': {'charset': 'utf8mb4',
+            }
     }
 }
 

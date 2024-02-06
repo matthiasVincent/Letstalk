@@ -1,0 +1,8 @@
+Description=gunicorn service to start gunicorn to serve Letstalk on system boot
+After=network.target
+[Service]
+User=ubuntu
+Group=www-data
+WorkingDirectory=/home/ubuntu/Letstalk
+ExecStart=/home/ubuntu/letstalk_env/bin/gunicorn Letstalk.wsgi:application -c gunicorn.conf.py
+ExecReload=/bin/kill -s HUP $MAINPID

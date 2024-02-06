@@ -61,7 +61,7 @@ class UserSuggestionView(APIView):
         actual_user_you_can_follow = [user for user in user_you_can_follow if user not in friend_request]
         print(user_you_can_follow)
         shuffle(user_you_can_follow)
-        serializer = ProfileSerializer(actual_user_you_can_follow, many=True).data
+        serializer = ProfileSerializer(user_you_can_follow, many=True).data
         return Response(serializer)
     
 class ConversationView(APIView):

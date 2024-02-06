@@ -121,11 +121,11 @@ console.log(window.location.host)
                                         <span>${(user.favorite_quote).slice(0, 12) + "..."}</span>`: ""}
                                 </div>
                             </div>
-                            <div class="bt-cont">
+                            <div class="bt-cont" id="btn-confirm-cont">
                                 <form action="{% url 'editprofile' %}" method="post" id="follow_form">
                                     {% csrf_token %}
                                     <input type="hidden" class="form-control" value="{{logged_in.username}}" name="follower">
-                                    <input type="hidden" class="form-control" value="{{user.username}}" name="following">
+                                    <input type="hidden" class="form-control" value="${user.username}" name="following">
                                     <input type="hidden" name="follow">
                                     <button class="btn btn-success p-2">Confirm</button>
                                 </form>
@@ -279,4 +279,6 @@ console.log(window.location.host)
         }
     )
 </script>
+<script src="{% static '/friend_request.js' %}" type="text/javascript
+"></script>
 {% endblock %}

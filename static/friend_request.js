@@ -16,7 +16,7 @@ $(document).ready(
                 contentType: false,
                 processData: false,
                 success: function(response){
-                    $('.btn-confirm-cont').html("You are now friends");
+                    $('#btn-confirm-cont').html("You are now friends");
                 },
                 error: function(data){
                     console.log("something went wrong")
