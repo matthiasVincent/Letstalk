@@ -32,4 +32,4 @@ urlpatterns = [
     #path('profile/<str:username>', views.profile_page, name="profile_page"),
 ]
 
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
