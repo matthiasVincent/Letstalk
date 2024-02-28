@@ -87,3 +87,16 @@ class NewChatConsumer(WebsocketConsumer):
                 "message": message
             }
         ))
+class NotificationConsumer(WebsocketConsumer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.notification = None
+
+    def connect(self):
+        self.accept()
+        self.send(json.dumps(
+            {"welcome": "You are now connected"}
+            ))
+
+    def disconnect(self, code):
+        return super().disconnect(code)

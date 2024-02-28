@@ -120,7 +120,7 @@ console.log(window.location.host)
                                 </div>
                             </div>
                             <div class="bt-cont" id="btn-confirm-cont">
-                                <form action="{% url 'editprofile' %}" method="post" id="follow_form">
+                                <form action="{% url 'editprofile' %}" method="post" class="accept_form">
                                     {% csrf_token %}
                                     <input type="hidden" class="form-control" value="{{logged_in.username}}" name="follower">
                                     <input type="hidden" class="form-control" value="${user.username}" name="following">
@@ -136,23 +136,27 @@ console.log(window.location.host)
                 console.log("something went wrong")
             },
             complete: function(){
-                const form = $('#follow_form');
-                console.log(form)
-                form.submit(function(ev){
+                //const form = $('#accept_form');
+                //console.log(form)
+                $('.accept_form').submit(function(ev){
                     console.log("begin")
                     ev.preventDefault();
                     var formD = new FormData(this)
+		    var url = $(this).attr('action')
+		    var form = $(this)
+		    console.log(url)
                     for (const [k,v] of formD){
                         console.log(k,v)
                     }
                     $.ajax({
-                        url: form.attr('action'),
+                        url: url,
                         type: "POST",
                         data: formD,
                         contentType: false,
                         processData: false,
                         success: function(response){
-                            $('#btn-confirm-cont').html("You are now friends");
+			    console.log(form.parent())
+                            form.parent().html("You are now friends");
                         },
                         error: function(data){
                             console.log("something went wrong")
@@ -207,7 +211,7 @@ console.log(window.location.host)
                                 </div>
                             </div>
                             <div class="bt-cont">
-                                <form action="{% url 'editprofile' %}" method="post" id="follow_form">
+                                <form action="{% url 'editprofile' %}" method="post" class="follow_form">
                                     {% csrf_token %}
                                     <input type="hidden" class="form-control" value="{{logged_in.username}}" name="follower">
                                     <input type="hidden" class="form-control" value="${user.username}" name="following">
@@ -223,12 +227,14 @@ console.log(window.location.host)
                 console.log("something went wrong")
             },
             complete: function(){
-                const form = $('#follow_form');
-                console.log(form)
-                form.submit(function(ev){
+               // const form = $('.follow_form');
+               // console.log(form)
+                $('.follow_form').submit(function(ev){
                     console.log("begin")
                     ev.preventDefault();
                     var formD = new FormData(this)
+		    var url = $(this).attr('action')
+		    var form = $(this)
                     for (const [k,v] of formD){
                         console.log(k,v)
                     }
@@ -239,9 +245,8 @@ console.log(window.location.host)
                         contentType: false,
                         processData: false,
                         success: function(response){
-                            var btn_text = $('#btn-confirm-cont');
-                            btn_text = $(btn_text)
-                            btn_text.attr("value", `${response.btn_text}`)
+                            console.log(form.find('button'))
+			    form.find('button').html(response.btn_text)
                         },
                         error: function(data){
                             console.log("something went wrong")
