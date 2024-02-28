@@ -4,6 +4,9 @@ $(document).ready(
         console.log(allforms.length)
         allforms.each(function(index, elem){
             console.log(elem)
+            $(elem).find('<input type="file"/>').on('change', function(){
+                console.log(this.value)
+            })
             $(elem).submit(function(ev){
                 console.log("begin")
                 ev.preventDefault();

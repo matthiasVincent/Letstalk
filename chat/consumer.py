@@ -9,6 +9,11 @@ from django.db.models import Q
 User = get_user_model()
 
 class NewChatConsumer(WebsocketConsumer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.room_name = None
+        self.auth_user = None
+        self.friend_user = None
     
     def connect(self):
         print("I am connected!")
@@ -57,7 +62,7 @@ class NewChatConsumer(WebsocketConsumer):
         message = text_data_json["message"]
         if message_type == "chat_message":
             message = Messages.objects.create(
-                room_name=self.chat,
+                room_name=self.chat, 
                 sender = self.auth_user,
                 receiver = self.friend_user,
                 text_message = message
@@ -69,6 +74,12 @@ class NewChatConsumer(WebsocketConsumer):
                 "type": "chat.message",
                 "message": MessageSerializer(message).data
             } 
+        )
+
+        # for notifications
+        notification = self.friend_user
+        async_to_sync(
+
         )
         # async_to_sync(self.channel_layer.group_send)(
         #     self.syn_group,
@@ -87,3 +98,23 @@ class NewChatConsumer(WebsocketConsumer):
                 "message": message
             }
         ))
+
+
+class NotificationsConsumer(WebsocketConsumer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.user = None
+    
+    def connect(self):
+        self.user = self.scope['user']
+        self.notification = self.user.username + "_notify"
+        async_to_sync(self.channel_layer.group_add)(
+            self.notification, self.channel_name
+        )
+        self.accept()
+
+    def disconnect(self, code):
+        async_to_sync(self.channel_layer.group_discard)(
+            self.notification, self.channel_name
+        ) 
+        return super().disconnect(code)
