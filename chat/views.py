@@ -2,10 +2,10 @@ from django.shortcuts import render, redirect, HttpResponse
 from django.contrib.auth import get_user_model, login, logout
 from .forms import ProfileForm, LoginForm
 from django.contrib import messages
-from .models import Profile,Post,LikePost,PostComment,Followers,Messages, Post_Picture, Cover_Picture, Profile_Picture
+from .models import Profile,Post,LikePost,PostComment,Followers,Messages, Post_Picture, Cover_Picture, Profile_Picture, ChatInbox
 from django.contrib.auth.decorators import login_required
 from django.http.response import JsonResponse
-import time 
+import time
 from itertools import chain
 from random import shuffle, choices
 from django.db.models import Q
@@ -15,6 +15,7 @@ from rest_framework import permissions, viewsets
 from .serializers import ProfileSerializer, PostCommentSerializer, PostSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.decorators import api_view
 from django.contrib.auth import authenticate
 from uuid import uuid4
 from random import shuffle
@@ -25,17 +26,43 @@ User = get_user_model()
 #     queryset = User.objects.all().order_by('-date_joined')
 #     serializer_class = UserSerializer
 #     permission_classes = [permissions.IsAuthenticated]
+class PostCommentView(APIView):
+    def get(self, request, *args, **kwargs):
+        post_id = request.GET['post_id']
+        print(post_id)
+        post = Post.objects.filter(post_id=post_id).first()
+        serializer = PostSerializer(post).data
+        return Response(serializer)
+
+class CommentReplyView(APIView):
+    def get(self, request, *args, **kwargs):
+        comment_id = request.GET['comment_id']
+        print(comment_id)
+        comment = PostComment.objects.filter(comment_id=comment_id).first()
+        serializer = PostCommentSerializer(comment).data
+        return Response(serializer)
 
 class UserPostView(APIView):
+    def get(self, request, *args, **kwargs):
+        username = request.GET['username']
+        print(username)
+        user = Profile.objects.filter(username=username).first()
+        posts = Post.objects.filter(poster=user).all()
+        serializer = PostSerializer(posts, many=True).data
+        return Response(serializer)
+
+class RandomPostView(APIView):
     def get(self, request, *args, **kwargs):
         username = request.user.username
         user = Profile.objects.filter(username=username).first()
         print(username)
         posts = Post.objects.filter(poster=user).all()
+        post_list = [post for post in Post.objects.all()]
         print(posts)
-        serializer = PostSerializer(posts, many=True).data
+        shuffle(post_list)
+        serializer = PostSerializer(post_list, many=True).data
         return Response(serializer)
-    
+
 class FriendRequestView(APIView):
     def get(self, request, *args, **kwargs):
         username = request.user.username
@@ -60,10 +87,10 @@ class UserSuggestionView(APIView):
         user_you_can_follow = [us for us in User.objects.all() if us not in profile_following and us != user]
         actual_user_you_can_follow = [user for user in user_you_can_follow if user not in friend_request]
         print(user_you_can_follow)
-        shuffle(user_you_can_follow)
-        serializer = ProfileSerializer(user_you_can_follow, many=True).data
+        shuffle(actual_user_you_can_follow)
+        serializer = ProfileSerializer(actual_user_you_can_follow, many=True).data
         return Response(serializer)
-    
+
 class ConversationView(APIView):
     def get(self, request, *args, **kwargs):
         username = request.user.username
@@ -73,6 +100,7 @@ class ConversationView(APIView):
         profile_followers = [user.follower for user in followers]
         profile_following = [user.following for user in following]
         buddy = [user for user in profile_followers if user in profile_following]
+        print("buddy list:", buddy)
         serializer = ProfileSerializer(buddy, many=True).data
         return Response(serializer)
 
@@ -123,8 +151,8 @@ def signup(request):
      else:
         form = ProfileForm()
      return render(request, 'signup.html', {'form':form})
-     
-@login_required(login_url='signin') 
+
+@login_required(login_url='signin')
 def home(request):
     user = Profile.objects.get(username=request.user.username)
     followers = Followers.objects.filter(following=user)
@@ -161,7 +189,7 @@ def editprofile(request):
         if 'profile_img_edit' in request.POST:
             profile_img = request.FILES['profile_img']
             user.profile_image = profile_img
-            user.save() 
+            user.save()
             profile_photos = Profile_Picture(user=user, photo=profile_img)
             profile_photos.save()
             data = ProfileSerializer(user).data
@@ -217,6 +245,24 @@ def editprofile(request):
                 check = Followers.objects.create(follower=logged_in, following=profile_user)
                 check.save()
                 return JsonResponse({'btn_text': "unfollow"})
+        elif 'dm' in request.POST:
+            sender = request.POST['sender']
+            receiver = request.POST['receiver']
+            sender_lastname = request.POST['sender_lastname']
+            receiver_lastname = request.POST['receiver_lastname']
+            editFriendLastName = "".join(receiver_lastname.split(' '))
+            editAuthLastName = "".join(sender_lastname.split(' '))
+            fullNameAuth = sender + editAuthLastName
+            fullNameFriend = receiver + editFriendLastName
+            name_array_sort = sorted([fullNameAuth, fullNameFriend])
+            room_name = name_array_sort[0][0:15] + "_" + name_array_sort[1][0:15]
+            dm = request.POST['dm']
+            chat, created = ChatInbox.objects.get_or_create(name=room_name)
+            sender_profile = Profile.objects.filter(username=sender).first()
+            receiver_profile = Profile.objects.filter(username=receiver).first()
+            new_message = Messages.objects.create(room_name=chat, sender=sender_profile, receiver=receiver_profile, text_message=dm)
+            new_message.save()
+            return JsonResponse({'status': 'Message successfully sent!'})
      return redirect('home')
 
 @login_required(login_url='signin')
@@ -230,12 +276,12 @@ def profile(request, username):
     # friends = [friend for friend in followers if friend.follower in following_count]
     if i_follow is not None:
         btn_text = "unfollow"
-    else: 
+    else:
         btn_text = "follow"
-    
+
     context = {
         'user': user,
-        'btn_text':btn_text, 
+        'btn_text':btn_text,
         'posts': my_posts,
         "logged_in": logged_in
     }
@@ -259,7 +305,7 @@ def post(request):
                     post_pics = Post_Picture(post=new_post, image=pic)
                     post_pics.save()
         else:
-            words = request.POST['words'] 
+            words = request.POST['words']
             post_images = request.FILES
             print(post_images)
             new_post = Post.objects.create(poster=user, words=words)
@@ -283,7 +329,7 @@ def likepost(request):
         likepost.delete()
         # post = Post.objects.get(post_id=post_id)
         # post.no_of_likes -= 1
-        # post.save() 
+        # post.save()
         #return redirect('home')
         #return HttpResponse("done")
     else:
@@ -301,7 +347,7 @@ def likepost(request):
     print(post_likes_count)
     context = {"count": post_likes_count, "I_liked": logged_in_user_liked}
     return JsonResponse(context)
-@login_required(login_url='signin')    
+@login_required(login_url='signin')
 def buddy(request):
     userprofile = Profile.objects.get(user=request.user)
     followers = Followers.objects.filter(following=request.user.username)
@@ -349,7 +395,7 @@ def inbox(request, profile):
             return HttpResponse("message sent successfully")
             #return redirect('/inbox/' + userprofile.user.username)
 
-    
+
     return render(request, 'inbox.html', {'userprofile':buddy})
 
 def getmessage(request, profile_id):
@@ -363,7 +409,7 @@ def getmessage(request, profile_id):
                                  .filter(Q(sender=user, receiver=user_for_profile)|Q(sender=user_for_profile, receiver=user))[:10].values_list())
         last_ten_messages.reverse()
 
-   
+
     #print(last_ten_messages)
 
     data = last_ten_messages
@@ -375,11 +421,14 @@ def post_comment(request, post_id):
         user = request.POST['profile']
         profile = Profile.objects.filter(username=user).first()
         comment = request.POST['comment']
-        post = Post.objects.filter(post_id=post_id).first()
-        comment = PostComment.objects.create(post=post, user=profile, comments=comment)
-        comment.save()
-        data = PostCommentSerializer(comment).data
-        return JsonResponse({'msg': data})
+        if comment == "":
+            return JsonResponse({'error': 'No form data submitted'})
+        else:
+            post = Post.objects.filter(post_id=post_id).first()
+            comment = PostComment.objects.create(post=post, user=profile, comments=comment)
+            comment.save()
+            data = PostCommentSerializer(comment).data
+            return JsonResponse({'msg': data})
 
     single_post = Post.objects.filter(post_id=post_id).first()
     return render(request, 'post_detail.html', {'post': single_post})

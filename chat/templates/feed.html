@@ -15,6 +15,13 @@
         <a href="#" class="search">
             <i class="fa fa-search text-light" style="font-size: 20px;"></i>
         </a>
+        <!-- <div class="form-container">
+            <form action="#">
+                <input type="text" class="form-control sr" placeholder="Type to search" name="search">
+                <button type="submit" class="btn btn-success ml-3"><i class="fa fa-search"></i></button>
+                <input type="submit" class="btn btn-success  p-2 text-white m-sm-2 sr" value="Search">
+            </form>
+        </div> -->
     </div>
 
     <div class="down-wrapper p-2">
@@ -148,9 +155,6 @@ console.log(window.location.host)
                         data: formD,
                         contentType: false,
                         processData: false,
-                        beforeSend: function(){
-                            form.find('button'.html('...'))
-                        }
                         success: function(response){
                             console.log(form.parent())
                             form.parent().html("You are now friends");
@@ -241,9 +245,6 @@ console.log(window.location.host)
                         data: formD,
                         contentType: false,
                         processData: false,
-                        beforeSend: function(){
-                            form.find('button'.html('...'))
-                        },
                         success: function(response){
                             console.log(form.find('button'))
                             form.find('button').html(response.btn_text)
