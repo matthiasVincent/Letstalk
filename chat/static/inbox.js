@@ -71,14 +71,14 @@ $(document).ready(
                 var text = mesg.text_message
                 console.log(mesg)
                 console.log(sender, receiver, created, text)
-                var friend = `{{userprofile.username}}`
+                var friend = friendUser
                 if (sender === friend)
                     {
                         const p = `<div class="d-flex justify-content-center my-2 text-dark"><span><small style="font-size:12px;">${formatMessageDate(created)}</small><span></div>
                         <div class="profile-cont p-3 mb-3 d-flex">
                         <a href="/profile/${sender}/" class="text-decoration-none text-white">
                             <div class="chat-buddy" style="width: 30px; height: 30px; border-radius: 50%;">
-                                <img src="{{userprofile.profile_image.url}}" alt="" style="width: 100%; height: 100%; border-radius: 50%;" class="bg-dark">
+                                <img src="${mesg.receiver.profile_image}" alt="" style="width: 100%; height: 100%; border-radius: 50%;" class="bg-dark">
                                     </div></a>
                             <div class="ml-2 text-justify p-2" style="border-radius:10px; background-color: whitesmoke">
                             <p class="text-dark" style="font-size: 12px;">${text}</p>

@@ -277,33 +277,39 @@ $(document).ready(
                     $('#post-detail').append(rxn, `<hr/>`)
 
                     if (post.comments){
-                        post.comments.map(comment => {
-                            let links;
-                            let cmt;
-                             if (comment.replies.length > 0){
+                        console.log(post.comments)
+                        for (let i = 0; i < post.comments.length; i++){
+                            console.log(post.comments[i])
+                            if (post.comments[i].reply){
+                                continue
+                            }
+                            else if (post.comments[i].replies.length > 0){
+                                let links;
+                                let cmt;
                                 let numberOfReplies;
                                 let repliesToComment;
                                 cmt = `
-                                <div class="only-comment mt-2 d-flex pl-3">
-                                    <div class="img-comment" style="width: 60px; height: 60px; border-radius: 50%;">
-                                        <img src="${comment.user.profile_image}" alt="" style="width: 100%; height: 100%; border-radius: 50%;">
-                                    </div>
-                                    <div class="cmt-details ml-3 p-3" style="width: 70%; border-radius: 15px; background-color: aliceblue;">
-                                        <div class="cmt-name">
-                                            <b><p>${comment.user.fullname}</p></b>
-                                            <p>${comment.comments}</p>
+                                    <div class="only-comment mt-2 d-flex pl-3">
+                                        <div class="img-comment" style="width: 60px; height: 60px; border-radius: 50%;">
+                                            <img src="${post.comments[i].user.profile_image}" alt="" style="width: 100%; height: 100%; border-radius: 50%;">
                                         </div>
-                                        <div class="some">
-                                            <span>${formatPostDate(comment.created)}</span>
-                                            <a href="#">like</a>
-                                            <a href="/replies/${comment.comment_id}/">reply</a>
+                                        <div class="cmt-details ml-3 p-3" style="width: 70%; border-radius: 15px; background-color: aliceblue;">
+                                            <div class="cmt-name">
+                                                <b><p>${post.comments[i].user.fullname}</p></b>
+                                                <p>${post.comments[i].comments}</p>
+                                            </div>
+                                            <div class="some">
+                                                <span>${formatPostDate(post.comments[i].created)}</span>
+                                                <a href="#">like</a>
+                                                <a href="/replies/${post.comments[i].comment_id}/">reply</a>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                `
-                                if (comment.replies.length > 2){
+
+                                    `
+                                if (post.comments[i].replies.length > 2){
                                     console.log("year greater than 2")
-                                    numberOfReplies = comment.replies.slice(0, 2)
+                                    numberOfReplies = post.comments[i].replies.slice(0, 2)
                                     repliesToComment = numberOfReplies.map(reply => `
                                     <div class="short">
                                         <div class="img-top">
@@ -316,7 +322,7 @@ $(document).ready(
                                     </div>
                                     `)
                                     links = `
-                                        <a href="/replies/${comment.comment_id}/" class="text-decoration-none text-dark">
+                                        <a href="/replies/${post.comments[i].comment_id}/" class="text-decoration-none text-dark">
                                             <div class="short-wrapper">
                                                 <p class="h5 p-2">View more replies...</p>
                                                 ${repliesToComment.join('')}
@@ -324,9 +330,10 @@ $(document).ready(
                                         </a>
                                     `
                                 }
+
                                 else {
                                     console.log("Less or eaqual 2")
-                                    numberOfReplies = comment.replies
+                                    numberOfReplies = post.comments[i].replies
                                     repliesToComment = numberOfReplies.map(reply => `
                                     <div class="short">
                                         <div class="img-top">
@@ -339,43 +346,40 @@ $(document).ready(
                                     </div>
                                     `)
                                     links = `
-                                        <a href="/replies/${comment.comment_id}/" class="text-decoration-none text-dark">
+                                        <a href="/replies/${post.comments[i].comment_id}/" class="text-decoration-none text-dark">
                                             <div class="short-wrapper">
                                             ${repliesToComment.join('')}
                                             </div>
                                         </a>
                                     `
-                                    //console.log(cmt, links)
+                                    console.log(cmt, links)
                                 }
-                                //$('.post-comments').append(cmt, links)
                                 $('.post-comments').append(cmt, links)
-                            }
-
-                            else{
-                                cmt = `
-                                <div class="only-comment mt-2 d-flex pl-3">
-                                    <div class="img-comment" style="width: 60px; height: 60px; border-radius: 50%;">
-                                        <img src="${comment.user.profile_image}" alt="" style="width: 100%; height: 100%; border-radius: 50%;">
-                                    </div>
-                                    <div class="cmt-details ml-3 p-3" style="width: 70%; border-radius: 15px; background-color: aliceblue;">
-                                        <div class="cmt-name">
-                                            <b><p>${comment.user.fullname}</p></b>
-                                            <p>${comment.comments}</p>
+                                }
+                            else {
+                                    cmt = `
+                                        <div class="only-comment mt-2 d-flex pl-3">
+                                            <div class="img-comment" style="width: 60px; height: 60px; border-radius: 50%;">
+                                                <img src="${post.comments[i].user.profile_image}" alt="" style="width: 100%; height: 100%; border-radius: 50%;">
+                                            </div>
+                                            <div class="cmt-details ml-3 p-3" style="width: 70%; border-radius: 15px; background-color: aliceblue;">
+                                                <div class="cmt-name">
+                                                    <b><p>${post.comments[i].user.fullname}</p></b>
+                                                    <p>${post.comments[i].comments}</p>
+                                                </div>
+                                                <div class="some">
+                                                    <span>${formatPostDate(post.comments[i].created)}</span>
+                                                    <a href="#">like</a>
+                                                    <a href="/replies/${post.comments[i].comment_id}/">reply</a>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div class="some">
-                                            <span>${formatPostDate(comment.created)}</span>
-                                            <a href="#">like</a>
-                                            <a href="/replies/${comment.comment_id}/">reply</a>
-                                        </div>
-                                    </div>
-                                </div>
                                 `
                                 $('.post-comments').append(cmt)
+                                }
                             }
                         }
-                        )
-                    }
-                 },
+            },
             complete: function()
             {
 

@@ -402,9 +402,9 @@ $(document).ready(
                     }
                 case "new_message":
                     {
-                        console.log($(`#${message.welcome[0].room_name}`).find('p.last-msg'))
-                        const msg = message.welcome[0]
-                       const targ = $(`#${message.welcome[0].room_name}`)
+                        console.log($(`#${sorted_message[0].room_name}`).find('p.last-msg'))
+                        const msg = sorted_message[0]
+                       const targ = $(`#${sorted_message[0].room_name}`)
                        const new_msg_top = `
                        ${msg.sender.username===logged_in_user? 
                         ` 
@@ -419,7 +419,7 @@ $(document).ready(
                                 </div>
                             </div>
                          </a>
-                        <hr/>`
+                        `
                          :
                          
                          `
@@ -434,15 +434,15 @@ $(document).ready(
                                 </div>
                             </div>
                         </a>
-                        <hr/>
+                       
                     `
                         }
                        `
                        
-                       $(`#${message.welcome[0].room_name}`).remove()
+                       $(`#${sorted_message[0].room_name}`).remove()
                        console.log(targ)
                        $('#buddy-list').prepend(new_msg_top)
-                       console.log(prev)
+                      //console.log(prev)
                         //$(`#${message.welcome[0].room_name}`).find('p.ast-msg').hide()
                        
                         break

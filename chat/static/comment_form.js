@@ -85,7 +85,7 @@ $(document).ready(
                             <div class="some">
                                 <span>${formatPostDate(data.created)}</span>
                                 <a href="#">like</a>
-                                <a href="">reply</a>
+                                <a href="/replies/${data.comment_id}/">reply</a>
                             </div>
                         </div>
                     </div>
@@ -99,10 +99,6 @@ $(document).ready(
                 }
             })
             document.querySelector('#msg').value = ""
-            //var t = $('.wrapper')
-            //console.log()
-            // console.log(document.querySelector('.wrapper'))
-            //$('.wrapper').scrollTop($('.wrapper').prop("scrollHeight"))
             
         })
     }

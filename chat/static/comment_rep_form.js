@@ -125,7 +125,13 @@ $(document).ready(
                             </div>
                         </div>`
 
-                        $('#comment-box').append(comment)
+                        const all_replies = `
+                    <div class="short-wrapper pt-3" id="reply-cont">
+                        ${comment}
+                    </div>
+                    `
+
+                        $('#comment-box').append(all_replies)
                 }
             },
 
