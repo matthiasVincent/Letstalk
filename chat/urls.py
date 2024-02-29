@@ -25,11 +25,14 @@ urlpatterns = [
     path('post_comment/<str:post_id>/', views.post_comment, name="post_comment"),
     path('replies/<str:comment_id>/', views.replies, name="replies"),
     # path('api/v1/', include(router.urls)),
-    path('api/v1/user_posts/', views.UserPostView.as_view()),
+    path('api/v1/random_posts/', views.RandomPostView.as_view()),
     path('api/v1/user/friend_request/', views.FriendRequestView.as_view()),
     path('api/v1/user/friend_suggestion/', views.UserSuggestionView.as_view()),
     path('api/v1/user/buddy_list/', views.ConversationView.as_view()),
+    path('api/v1/<str:username>/posts/', views.UserPostView.as_view()),
+    path('api/v1/<str:post_id>/comments/', views.PostCommentView.as_view()),
+    path('api/v1/<str:comment_id>/replies/', views.CommentReplyView.as_view()),
     #path('profile/<str:username>', views.profile_page, name="profile_page"),
 ]
 
-# urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

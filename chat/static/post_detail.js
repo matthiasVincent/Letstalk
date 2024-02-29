@@ -1,13 +1,50 @@
 $(document).ready(
     function(){
-        const sections = document.querySelectorAll('section')
-        const navs = document.querySelectorAll('.icons')
-        console.log(sections.length, navs.length)
+        const post_id = JSON.parse(document.getElementById('post_id').textContent)
         const logged_in_user = JSON.parse(document.getElementById('logged_in').textContent)
-        console.log(logged_in_user)
+        console.log(post_id)
+        // Handles user following and unfollowing
+        const form = $('#follow_form');
+        console.log(form)
+        form.submit(function(ev){
+            console.log("begin")
+            ev.preventDefault();
+            var formD = new FormData(this)
+            for (const [k,v] of formD){
+                console.log(k,v)
+            }
+            $.ajax({
+                url: form.attr('action'),
+                type: "POST",
+                data: formD,
+                contentType: false,
+                processData: false,
+                success: function(response){
+                    var btn_text = $('.btn-info');
+                    btn_text = $(btn_text)
+                    console.log(btn_text)
+                    console.log(response.btn_text)
+                    btn_text.attr("value", `${response.btn_text}`)
+                },
+                error: function(data){
+                    console.log("something went wrong")
+                }
+            })
+        })
 
-        //function to format post creation Date
-        function formatPostDate(created){
+
+         // function to check whether a post is liked by authenticated user
+         function checkLikes(user,  all_likes){
+            for (let likes of all_likes){
+                if (user===likes){
+                    return true
+                }
+            }
+            return false
+        }
+
+         // function to format post creation Date
+         function formatPostDate(created){
             let format;
             const today = new Date()
             const todaySeconds = today.getTime()
@@ -16,16 +53,16 @@ $(document).ready(
             const milliDiff = todaySeconds-passDateSeconds
             const hourSeconds = 60 * 60
             const k = 1000
-            const diff = milliDiff/k
+            const diff = Math.floor(milliDiff/k)
         
             if (diff < 20){
                 format = "just now"
             }
             else if (diff > 20 && diff < 60){
-                format = diff + " secs"
+                format = diff <= 1? diff + "sec" : diff + "secs"
             }
            else if (diff >= 60 && diff < hourSeconds){
-            format = Math.floor(diff/60) + " mins"
+            format = Math.floor(diff/60) <= 1 ? Math.floor(diff/60) + "min" : Math.floor(diff/60) + "mins"
            }
            else if (diff >= hourSeconds && diff < (24 * hourSeconds)){
            format = Math.floor(diff/(60 * 60)) + "h"
@@ -39,44 +76,23 @@ $(document).ready(
            }
            return format
         }
-        
-        // function to check whether a post is liked by authenticated user
-        function checkLikes(user,  all_likes){
-            for (let likes of all_likes){
-                if (user===likes){
-                    return true
-                }
-            }
-            return false
-        }
-
-        for (let i = 0; i < navs.length; i++){
-            navs[i].addEventListener('click', function(){
-                    console.log(this)
-                    for (let i = 0; i < sections.length; i++){
-                        sections[i].classList.remove('active')
-                        navs[i].classList.remove('active')
-                    }
-                    this.classList.add('active')
-                    sections[i].classList.add('active')
-                })
-            }
-
-        //Ajax request to fetch random posts for display in the feed
-         $.ajax({
+        //console.log($('#user-posts'))
+        // Handles user posts fetching
+        $.ajax({
             type: "GET",
-            url: "http://" + window.location.host + "/api/v1/random_posts/",
+            url: "http://" + window.location.host + "/api/v1/" + post_id + "/comments/",
+            data: {post_id : post_id},
             success: function(data){
+                let post = data
                 console.log(data)
-                data.map((post) => {
                     const header = `
-                    <div class="d-flex justify-content-between mb-2 p-2" >
+                    <div class="d-flex justify-content-between mb-2 pt-3" >
                     <a href="/profile/${post.poster.username}/" class="text-decoration-none text-dark pl-0">
-                        <div class="lf">
-                            <div class="img-cont m-0">
-                                <img src="${post.poster.profile_image}" alt="hi" style="width: 100%; height: 100%; border-radius: 50%;">
+                        <div class="d-flex justify-content-between">
+                            <div class="img-cont bg-warning" style="width: 60px; height:60px; border-radius:50%;">
+                                <img src="${post.poster.profile_image}" alt="hi">
                             </div>
-                            <div class="ml-4 d-flex flex-column">
+                            <div class="ml-2 d-flex flex-column">
                             <span class="h5 text-dark">${post.poster.fullname.length > 12 ? `${post.poster.fullname.slice(0, 12) + "..."}` : `${post.poster.fullname}`}</span>
                             <span class="ml-2"><span><code class="text-dark">${formatPostDate(post.created)} &nbsp;</code></span>
                                <small>${post.poster.followers && post.poster.followers > 1? `${post.poster.followers + " followers"}`
@@ -95,7 +111,7 @@ $(document).ready(
                     `
                     const sp = `<span class="text-primary showfull" onclick="$(this).parent().hide(); $(this).parent().siblings().show()" style="cursor: pointer;">See more</span>`
                     const post_words = `
-                    <div class="p-3 text-justify">
+                    <div class="pt-3 px-2 text-justify">
                          <p class="post-words" style="display:none; cursor:pointer;" onclick="$(this).hide(); $(this).siblings().show()">
                               ${post.words}
                           </p>
@@ -115,7 +131,7 @@ $(document).ready(
                                         </div>
                                     </div>
                             `
-                            $('#posts-container').append(header, post_words, pics)
+                            $('#post-detail').append(header, post_words, pics)
                             break
                         case 2:
                             var one = pictures[0]
@@ -130,7 +146,7 @@ $(document).ready(
                                         </div>
                                     </div>
                             `
-                            $('#posts-container').append(header, post_words, pics)
+                            $('#post-detail').append(header, post_words, pics)
 
                             break
                         case 3:
@@ -155,7 +171,7 @@ $(document).ready(
                                     </div>
                                     </div>
                             `
-                            $('#posts-container').append(header, post_words, pics)
+                            $('#post-detail').append(header, post_words, pics)
                             break
                         case 4:
                             var one = pictures[0]
@@ -180,7 +196,7 @@ $(document).ready(
                                     </div>
                                     </div>
                             `
-                            $('#posts-container').append(header, post_words, pics)
+                            $('#post-detail').append(header, post_words, pics)
                             break
                         case 5:
                             var one = pictures[0]
@@ -203,10 +219,10 @@ $(document).ready(
                                         </div>
                                     </div>
                             `
-                            $('#posts-container').append(header, post_words, pics)
+                            $('#post-detail').append(header, post_words, pics)
                             break
                         default:
-                            $('#posts-container').append(header, post_words)
+                            $('#post-detail').append(header, post_words)
                             break
                     }
                     var iLike = checkLikes(logged_in_user, post.all_likers)
@@ -258,15 +274,117 @@ $(document).ready(
                             </div>
                         </div>
                     `
-                    $('#posts-container').append(rxn, `<hr/>`)
-                })
-                 },
+                    $('#post-detail').append(rxn, `<hr/>`)
 
-                 complete: function(){
-                
-                    // Post Liking ajax call, executed immediately after initial ajax call
+                    if (post.comments){
+                        console.log(post.comments)
+                        for (let i = 0; i < post.comments.length; i++){
+                            console.log(post.comments[i])
+                            if (post.comments[i].reply){
+                                continue
+                            }
+                            else if (post.comments[i].replies.length > 0){
+                                let links;
+                                let cmt;
+                                let numberOfReplies;
+                                let repliesToComment;
+                                cmt = `
+                                    <div class="only-comment mt-2 d-flex pl-3">
+                                        <div class="img-comment" style="width: 60px; height: 60px; border-radius: 50%;">
+                                            <img src="${post.comments[i].user.profile_image}" alt="" style="width: 100%; height: 100%; border-radius: 50%;">
+                                        </div>
+                                        <div class="cmt-details ml-3 p-3" style="width: 70%; border-radius: 15px; background-color: aliceblue;">
+                                            <div class="cmt-name">
+                                                <b><p>${post.comments[i].user.fullname}</p></b>
+                                                <p>${post.comments[i].comments}</p>
+                                            </div>
+                                            <div class="some">
+                                                <span>${formatPostDate(post.comments[i].created)}</span>
+                                                <a href="#">like</a>
+                                                <a href="/replies/${post.comments[i].comment_id}/">reply</a>
+                                            </div>
+                                        </div>
+                                    </div>
 
-             $('.likebutton').click(
+                                    `
+                                if (post.comments[i].replies.length > 2){
+                                    console.log("year greater than 2")
+                                    numberOfReplies = post.comments[i].replies.slice(0, 2)
+                                    repliesToComment = numberOfReplies.map(reply => `
+                                    <div class="short">
+                                        <div class="img-top">
+                                            <img src="${reply.user.profile_image}" alt="" class="image">
+                                        </div>
+                        
+                                        <div class="reply-txt p-2 mb-2">
+                                            <p><span class="mr-2"><b>${reply.user.fullname.slice(0, 12) + "..."}</b></span>${reply.comments.slice(0, 13) + "..."}</p>
+                                        </div>
+                                    </div>
+                                    `)
+                                    links = `
+                                        <a href="/replies/${post.comments[i].comment_id}/" class="text-decoration-none text-dark">
+                                            <div class="short-wrapper">
+                                                <p class="h5 p-2">View more replies...</p>
+                                                ${repliesToComment.join('')}
+                                            </div>
+                                        </a>
+                                    `
+                                }
+
+                                else {
+                                    console.log("Less or eaqual 2")
+                                    numberOfReplies = post.comments[i].replies
+                                    repliesToComment = numberOfReplies.map(reply => `
+                                    <div class="short">
+                                        <div class="img-top">
+                                            <img src="${reply.user.profile_image}" alt="" class="image">
+                                        </div>
+                        
+                                        <div class="reply-txt p-2 mb-2">
+                                            <p><span class="mr-2"><b>${reply.user.fullname.slice(0, 12) + "..."}</b></span>${reply.comments.slice(0, 13) + "..."}</p>
+                                        </div>
+                                    </div>
+                                    `)
+                                    links = `
+                                        <a href="/replies/${post.comments[i].comment_id}/" class="text-decoration-none text-dark">
+                                            <div class="short-wrapper">
+                                            ${repliesToComment.join('')}
+                                            </div>
+                                        </a>
+                                    `
+                                    console.log(cmt, links)
+                                }
+                                $('.post-comments').append(cmt, links)
+                                }
+                            else {
+                                    cmt = `
+                                        <div class="only-comment mt-2 d-flex pl-3">
+                                            <div class="img-comment" style="width: 60px; height: 60px; border-radius: 50%;">
+                                                <img src="${post.comments[i].user.profile_image}" alt="" style="width: 100%; height: 100%; border-radius: 50%;">
+                                            </div>
+                                            <div class="cmt-details ml-3 p-3" style="width: 70%; border-radius: 15px; background-color: aliceblue;">
+                                                <div class="cmt-name">
+                                                    <b><p>${post.comments[i].user.fullname}</p></b>
+                                                    <p>${post.comments[i].comments}</p>
+                                                </div>
+                                                <div class="some">
+                                                    <span>${formatPostDate(post.comments[i].created)}</span>
+                                                    <a href="#">like</a>
+                                                    <a href="/replies/${post.comments[i].comment_id}/">reply</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                `
+                                $('.post-comments').append(cmt)
+                                }
+                            }
+                        }
+            },
+            complete: function()
+            {
+
+            // Post Liking ajax call
+            $('.likebutton').click(
                 function(ev)
                     {
                         ev.preventDefault();
@@ -336,122 +454,7 @@ $(document).ready(
 
                     }
                             );
-
-    }
-)
+                        })
                  },
                 })
-
-
-        //Websocket to handle message notification, runs immediately a user is authenticated
-         const socket = new WebSocket("ws://" + window.location.host + "/notifications/")
-            socket.onopen = function(e){
-                console.log("Connected!")
-            }
-            socket.onclose = function(e){
-                console.log("Disconnected")
-            }
-            socket.onmessage = function(e){
-                //console.log(JSON.parse(e.data))
-            const message = JSON.parse(e.data)
-            const messageWithTransformedDate = message.welcome.map(user => {
-                return {...user, created: new Date(user.created)}
-            })
-            console.log(messageWithTransformedDate)
-            const sorted_message = messageWithTransformedDate.sort((a, b) => Number(b.created) - Number(a.created))
-            console.log(sorted_message)
-            // const logged_in_user = JSON.parse(document.getElementById('logged_in').textContent)
-            // console.log(logged_in_user)
-            console.log(message)
-            switch (message.type){
-                case "previous_conv":
-                    {
-                        $('#buddy-list').append(
-                            sorted_message.map(user => `
-                            ${user.sender.username===logged_in_user? 
-                            ` <a href="/inbox/${user.receiver.username}/" class="text-decoration-none" id="${user.room_name}">
-                            <div class="single-friend p-3 d-flex" style="width: 80%;">
-                                <div class="picture-cont">
-                                    <img src="${user.receiver.profile_image}" alt="" id="pb">
-                                </div>
-                                <div class="friend-det" style="margin-left: 10%;">
-                                    <p class="h5 text-dark">${user.receiver.fullname.length > 12 ? `${user.receiver.fullname.slice(0, 12) + "..."}` : `${user.receiver.fullname}`}</p>
-                                    <p class="last-msg h6 text-dark">${user.text_message.length > 12 ? `${user.text_message.slice(0, 12) + "..."}` : `${user.text_message}`}</p>
-                                </div>
-                            </div>
-                        </a>
-                        <hr/>` :`
-                        <a href="/inbox/${user.sender.username}/" class="text-decoration-none" id="${user.room_name}">
-                        <div class="single-friend p-3 d-flex" style="width: 80%;">
-                            <div class="picture-cont">
-                                <img src="${user.sender.profile_image}" alt="" id="pb">
-                            </div>
-                            <div class="friend-det" style="margin-left: 10%;">
-                                <p class="h5 text-dark">${user.sender.fullname.length > 12 ? `${user.sender.fullname.slice(0, 12) + "..."}` : `${user.sender.fullname}`}</p>
-                                <p class="last-msg h6 text-dark">${user.text_message.length > 12 ? `${user.text_message.slice(0, 12) + "..."}` : `${user.text_message}`}</p>
-                            </div>
-                        </div>
-                    </a>
-                    <hr/>
-                        `
-                            }
-                            
-                            `)
-                        )
-                        break;
-                    }
-                case "new_message":
-                    {
-                        console.log($(`#${sorted_message[0].room_name}`).find('p.last-msg'))
-                        const msg = sorted_message[0]
-                       const targ = $(`#${sorted_message[0].room_name}`)
-                       const new_msg_top = `
-                       ${msg.sender.username===logged_in_user? 
-                        ` 
-                        <a href="/inbox/${msg.receiver.username}/" class="text-decoration-none" id="${msg.room_name}">
-                            <div class="single-friend p-3 d-flex" style="width: 80%;">
-                                <div class="picture-cont">
-                                    <img src="${msg.receiver.profile_image}" alt="" id="pb">
-                                </div>
-                                <div class="friend-det" style="margin-left: 10%;">
-                                    <p class="h5 text-dark">${msg.receiver.fullname.length > 12 ? `${msg.receiver.fullname.slice(0, 12) + "..."}` : `${msg.receiver.fullname}`}</p>
-                                    <p class="last-msg h6 text-dark">${msg.text_message.length > 12 ? `${msg.text_message.slice(0, 12) + "..."}` : `${msg.text_message}`}</p>
-                                </div>
-                            </div>
-                         </a>
-                        `
-                         :
-                         
-                         `
-                        <a href="/inbox/${msg.sender.username}/" class="text-decoration-none" id="${msg.room_name}">
-                            <div class="single-friend p-3 d-flex" style="width: 80%;">
-                                <div class="picture-cont">
-                                    <img src="${msg.sender.profile_image}" alt="" id="pb">
-                                </div>
-                                <div class="friend-det" style="margin-left: 10%;">
-                                    <p class="h5 text-dark">${msg.sender.fullname.length > 12 ? `${msg.sender.fullname.slice(0, 12) + "..."}` : `${msg.sender.fullname}`}</p>
-                                    <p class="last-msg h6 text-dark">${msg.text_message.length > 12 ? `${msg.text_message.slice(0, 12) + "..."}` : `${msg.text_message}`}</p>
-                                </div>
-                            </div>
-                        </a>
-                       
-                    `
-                        }
-                       `
-                       
-                       $(`#${sorted_message[0].room_name}`).remove()
-                       console.log(targ)
-                       $('#buddy-list').prepend(new_msg_top)
-                      //console.log(prev)
-                        //$(`#${message.welcome[0].room_name}`).find('p.ast-msg').hide()
-                       
-                        break
-                    }
-                default: console.log("something wrong")
-            }
-           
-            }
-
-
-    }
-)
+    })

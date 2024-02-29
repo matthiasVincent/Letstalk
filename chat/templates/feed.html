@@ -2,7 +2,7 @@
 {% load static %}
 {% block link %}
  {{block.super}}
- <link rel="stylesheet" href="{% static '/style.css' %}"> 
+ <link rel="stylesheet" href="{% static '/style.css' %}">
  {% endblock %}
 {% block title %}<title>{{user.fullname}}</title> {% endblock %}
 
@@ -46,6 +46,7 @@
                     <div class="img-cont" style="width: 30px; height: 30px; border-radius: 50%;">
                         <img src="{{user.profile_image.url}}" alt="hi" style="width: 100%; height: 100%; border-radius: 50%;"/>
                     </div>
+                    {{user.username | json_script:'logged_in'}}
                 </a>
                 <ul class="drop-items hide mt-3 p-3">
                     <li>
@@ -83,9 +84,10 @@
 
 {% block footer %} {% endblock %}
 
-{% block script %} 
+{% block script %}
 {{block.super}}
 <script src="{% static '/feed.js' %}" type="text/javascript"></script>
+<!-- <script src="{% static '/friend_request.js' %}" type="text/javascript"></script> -->
 <script>
     console.log($('.drop'))
     $('.drop').click(
@@ -99,17 +101,14 @@ console.log(f)
 console.log(window.location.host)
     $(document).ready(
         function(){
-            // $.get("http://localhost:8000/api/v1/user_posts/", function(data){
-            //     console.log(data)
-                // $('.api-cont').append(data[0].post_pictures.map(
-                //     pic =>  `<img src="http://localhost:8001/${pic.image}" width="150px" height="150px">`
-                // )
-                //     // `<img src="http://localhost:8001/${data[0].post_pictures[3].image}" width="150px" height="150px">`
-                // )
-                                //})
-                $.get("http://" + window.location.host + "/api/v1/user/friend_request/", function(data){
-                console.log(data)
-                $('#follower-request').append(data.map(user => `
+
+            // Confirm friend request Ajax call
+            $.ajax(
+            {
+            url: "http://" + window.location.host + "/api/v1/user/friend_request/",
+            type: "GET",
+            success: function(response){
+                $('#follower-request').append(response.map(user => `
                             <div class="user">
                                 <div class="lf">
                                     <div class="img-cont">
@@ -122,7 +121,7 @@ console.log(window.location.host)
                                 </div>
                             </div>
                             <div class="bt-cont" id="btn-confirm-cont">
-                                <form action="{% url 'editprofile' %}" method="post" id="follow_form">
+                                <form action="{% url 'editprofile' %}" method="post" class="accept_form">
                                     {% csrf_token %}
                                     <input type="hidden" class="form-control" value="{{logged_in.username}}" name="follower">
                                     <input type="hidden" class="form-control" value="${user.username}" name="following">
@@ -132,153 +131,134 @@ console.log(window.location.host)
                             </div>
                         </div>
                         <hr>
-                `))
-                                })
-                $.get("http://" + window.location.host + "/api/v1/user/friend_suggestion/", function(data){
-                console.log(data)
-                $('#user_suggestion').append(data.map(user => `
-                            <div class="user">
-                                <div class="lf">
-                                    <div class="img-cont">
-                                        <img src="${user.profile_image}" alt="hi" style="width: 100%; height: 100%; border-radius: 50%;">
-                                    </div>
-                                    <div class="some-text">
-                                        <span>${user.fullname.length > 12 ? `${user.fullname.slice(0, 12) + "..."}` : `${user.fullname}`}</span>
-                                        ${user.favorite_quote? `
-                                        <span>${(user.favorite_quote).slice(0, 12) + "..."}</span>`: ""}
-                                    </div>
-                                </div>
-                                <div class="bt-cont">
-                                    <a href="/profile/${user.username}/" class="text-white text-decoration-none btn btn-success p-2">View Profile</a>
-                                </div>
-                            </div>
-                            <hr>
-                `))
-
-                $('#request_suggestion').append(data.map(user => `
-                            <div class="user">
-                                <div class="lf">
-                                    <div class="img-cont">
-                                        <img src="${user.profile_image}" alt="hi" style="width: 100%; height: 100%; border-radius: 50%;">
-                                    </div>
-                                    <div class="some-text">
-                                        <span>${user.fullname.length > 12 ? `${user.fullname.slice(0, 12) + "..."}` : `${user.fullname}`}</span>
-                                        ${user.favorite_quote? `
-                                        <span>${(user.favorite_quote).slice(0, 12) + "..."}</span>`: ""}
-                                    </div>
-                                </div>
-                                <div class="bt-cont">
-                                    <a href="/profile/${user.username}/" class="text-white text-decoration-none btn btn-success p-2">View Profile</a>
-                                </div>
-                            </div>
-                            <hr>
-                `))
-
+                `));
+            },
+            error: function(data){
+                console.log("something went wrong")
+            },
+            complete: function(){
+                //const form = $('#accept_form');
+                //console.log(form)
+                $('.accept_form').submit(function(ev){
+                    console.log("begin")
+                    ev.preventDefault();
+                    var formD = new FormData(this)
+                    var url = $(this).attr('action')
+                    var form = $(this)
+                    console.log(url)
+                    for (const [k,v] of formD){
+                        console.log(k,v)
+                    }
+                    $.ajax({
+                        url: url,
+                        type: "POST",
+                        data: formD,
+                        contentType: false,
+                        processData: false,
+                        success: function(response){
+                            console.log(form.parent())
+                            form.parent().html("You are now friends");
+                        },
+                        error: function(data){
+                            console.log("something went wrong")
+                        }
+                    });
                 })
+            }
+        });
 
-                $.get("http://" + window.location.host + "/api/v1/user/buddy_list/", function(data){
-                console.log(data)
-                $('#buddy-list').append(
-                    data.map(user => `
-                    <a href="/inbox/${user.username}/" class="text-decoration-none">
-                        <div class="single-friend p-3 d-flex" style="width: 80%;">
-                            <div class="picture-cont">
-                                <img src="${user.profile_image}" alt="" id="pb">
+
+        // User you can follow suggestions
+        $.ajax(
+            {
+            url: "http://" + window.location.host + "/api/v1/user/friend_suggestion/",
+            type: "GET",
+            success: function(response){
+
+                // On Home page
+
+                $('#user_suggestion').append(response.map(user => `
+                        <div class="user">
+                            <div class="lf">
+                                <div class="img-cont">
+                                    <img src="${user.profile_image}" alt="hi" style="width: 100%; height: 100%; border-radius: 50%;">
+                                </div>
+                                <div class="some-text">
+                                    <span>${user.fullname.length > 12 ? `${user.fullname.slice(0, 12) + "..."}` : `${user.fullname}`}</span>
+                                    ${user.favorite_quote? `
+                                    <span>${(user.favorite_quote).slice(0, 12) + "..."}</span>`: ""}
+                                </div>
                             </div>
-                            <div class="friend-det" style="margin-left: 10%;">
-                                <p class="h5 text-dark">${user.fullname.length > 12 ? `${user.fullname.slice(0, 12) + "..."}` : `${user.fullname}`}</p>
-                                <p class="last-msg h6 text-dark">Hello world</p>
+                            <div class="bt-cont">
+                                <a href="/profile/${user.username}/" class="text-white text-decoration-none btn btn-success p-2">View Profile</a>
                             </div>
                         </div>
-                    </a>
-                    <hr/>
-                    `)
-                )
-                })
+                        <hr>
+            `));
 
 
-            $('.likebutton').click(
-                    function(ev)
-                        {
-                            ev.preventDefault();
-                            const n = $(this);
-                            console.log(n)
-                            const data_id = $(this).attr("id")
-                            console.log(data_id)
-                            $.ajax(
-                        {
-                            type: "GET",
-                            url: "/likepost/",
-                            data: {post: data_id},
-                            success: function(data) 
-                                {
-                                                
-                                 const user_in = data.I_liked
-                                 const likes = data.count
-                                 if (user_in === true && likes > 2) 
-                                 {
-                                    $(`.like_count${data_id}`).html(`You, and ${likes - 1} others`)
-                                    $(`.i-like${data_id}`).children('i').removeClass('text-dark')
-                                    $(`.i-like${data_id}`).children('i').addClass('text-primary')
-                                    $(`.i-like${data_id}`).children('span').html(`${likes}`)
-                                    // $(`.i-like${data_id}`).css("color", "blue")
-                                 }
-                                 else if (user_in == false && likes == 1)
-                                 {
-                                    $(`.like_count${data_id}`).html(`${likes} like`)
-                                    $(`.i-like${data_id}`).children('i').removeClass('text-primary')
-                                    $(`.i-like${data_id}`).children('i').addClass('text-dark')
-                                    $(`.i-like${data_id}`).children('span').html(`${likes}`)
-                                    //$(`.i-like${data_id}`).css("color", "black")
-                                }
-                                 else if (user_in == false && likes >= 2)
-                                 {
-                                    $(`.like_count${data_id}`).html(`${likes} likes`)
-                                    $(`.i-like${data_id}`).children('i').removeClass('text-primary')
-                                    $(`.i-like${data_id}`).children('i').addClass('text-dark')
-                                    $(`.i-like${data_id}`).children('span').html(`${likes}`)
-                                    //$(`.i-like${data_id}`).css("color", "black")
-                                 }
-                                 else if (user_in == false && likes < 1)
-                                 {
-                                    $(`.like_count${data_id}`).html(``)
-                                    $(`.i-like${data_id}`).children('i').removeClass('text-primary')
-                                    $(`.i-like${data_id}`).children('i').addClass('text-dark')
-                                    $(`.i-like${data_id}`).children('span').html(`${likes}`)
-                                    //$(`.i-like${data_id}`).css("color", "black")
-                                }
-                                 else if (user_in == true && likes == 1)
-                                 {
-                                    $(`.like_count${data_id}`).html(`You Liked this`)
-                                    $(`.i-like${data_id}`).children('i').removeClass('text-dark')
-                                    $(`.i-like${data_id}`).children('i').addClass('text-primary')
-                                    $(`.i-like${data_id}`).children('span').html(`${likes}`)
-                                    //$(`.i-like${data_id}`).css("color", "blue")
-                                }
-                                 else if (user_in == true && likes == 2)
-                                 {
-                                    $(`.like_count${data_id}`).html(`You, and ${likes - 1} other`)
-                                    $(`.i-like${data_id}`).children('i').removeClass('text-dark')
-                                    $(`.i-like${data_id}`).children('i').addClass('text-primary')
-                                    
-                                    $(`.i-like${data_id}`).children('span').html(`${likes}`)
-                                    //$(`.i-like${data_id}`).css("color", "blue")
-                                    }
-                                    console.log(data)
-                                },
-                            error: function(data) 
-                                {
-                                 console.log("something went wrong")
-                                }
-                        
+            //   On Add friends page
+
+                $('#request_suggestion').append(response.map(user => `
+                            <div class="user">
+                                <div class="lf">
+                                    <div class="img-cont">
+                                        <img src="${user.profile_image}" alt="hi" style="width: 100%; height: 100%; border-radius: 50%;">
+                                    </div>
+                                    <div class="some-text">
+                                        <span>${user.fullname.length > 12 ? `${user.fullname.slice(0, 12) + "..."}` : `${user.fullname}`}</span>
+                                        ${user.favorite_quote? `
+                                        <span>${(user.favorite_quote).slice(0, 12) + "..."}</span>`: ""}
+                                </div>
+                            </div>
+                            <div class="bt-cont">
+                                <form action="{% url 'editprofile' %}" method="post" class="follow_form">
+                                    {% csrf_token %}
+                                    <input type="hidden" class="form-control" value="{{logged_in.username}}" name="follower">
+                                    <input type="hidden" class="form-control" value="${user.username}" name="following">
+                                    <input type="hidden" name="follow">
+                                    <button class="btn btn-success p-2" id="btn-follow-cont">Follow</button>
+                                </form>
+                            </div>
+                        </div>
+                        <hr>
+                `));
+            },
+            error: function(data){
+                console.log("something went wrong")
+            },
+            complete: function(){
+               // const form = $('.follow_form');
+               // console.log(form)
+                $('.follow_form').submit(function(ev){
+                    console.log("begin")
+                    ev.preventDefault();
+                    var formD = new FormData(this)
+                    var url = $(this).attr('action')
+                    var form = $(this)
+                    for (const [k,v] of formD){
+                        console.log(k,v)
+                    }
+                    $.ajax({
+                        url: form.attr('action'),
+                        type: "POST",
+                        data: formD,
+                        contentType: false,
+                        processData: false,
+                        success: function(response){
+                            console.log(form.find('button'))
+                            form.find('button').html(response.btn_text)
+                        },
+                        error: function(data){
+                            console.log("something went wrong")
                         }
-                                );
+                    });
+                })
+            }
+        });
 
-        }
-    )
+            
         }
     )
 </script>
-<script src="{% static '/friend_request.js' %}" type="text/javascript
-"></script>
 {% endblock %}

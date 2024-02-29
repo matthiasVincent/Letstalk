@@ -6,32 +6,33 @@
 {% block title %} <title>Post by ....</title> {% endblock %}
 {% block brand %} <p class="h5 text-white">Create Post</p> {% endblock %}
 {% block collapse %}
-<nav class="sticky-top m-0" style="border-bottom: 1px solid grey; background-color: aliceblue;">
+<nav class="sticky-top m-0 p-2" style="border-bottom: 1px solid grey; background-color: aliceblue;">
 <ul class="d-flex align-items-center justify-content-between p-2 m-0" style="list-style: none;">
     <li>
         <a href="{% url 'home' %}"  class="h6 text-dark"><i class="fa fa-arrow-left"></i></a>
     </li>
     <li>
-        {{post.poster.fullname}} post
+        <h6>{{post.poster.fullname}} post</h6>
     </li>
     <li>
         <a href="{% url 'home' %}"  class="h6 text-dark"><i class="fa fa-search"></i></a>
     </li>
 
 </ul>
+{{post.post_id | json_script:'post_id'}}
+{{request.user.username | json_script:'logged_in'}}
 </nav>
 {% endblock %}
 
 {% block main %}
 <div class="wrapper p-0">
-    <div class="container p-0 mb-3" style="border-radius: 25px;">
-       {% include 'post_header.html' %}
-       {% include 'post_words.html' %}
-       {% include 'post_photos.html' %}
-       {% include 'post_rxn.html' %}
+    <div class="p-0 mb-3" style="border-radius: 25px;" id="post-detail">
+       <!-- Fetch through ajax API -->
     </div>
     <hr>
-    {% include 'comments.html' %}
+    <div class="post-comments" style="padding-bottom: 70px;">
+        <!-- Fetch through ajax API -->
+    </div>
     {% include 'comment_form.html' %}
 </div>
 {% endblock %}
@@ -42,5 +43,5 @@
 {% block script %} 
 {{block.super}}
 <script src="{% static '/comment_form.js' %}" type="text/javascript"></script>
-<script src="{% static '/like_post.js' %}" type="text/javascript"></script>
+<script src="{% static '/post_detail.js' %}" type="text/javascript"></script>
 {% endblock %}

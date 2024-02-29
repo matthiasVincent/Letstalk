@@ -78,7 +78,7 @@ class Post(models.Model):
     @property
     def all_likers(self):
         likes = LikePost.objects.filter(post=self).all()
-        likers = [like.user for like in likes]
+        likers = [like.user.username for like in likes]
         return likers
 
 
@@ -153,6 +153,10 @@ class ChatInbox(models.Model):
 
     def __str__(self):
         return self.name
+    
+    @property
+    def messages(self):
+        return Messages.objects.filter(room_name=self).all().order_by("-created")
 
 
 class Messages(models.Model):
